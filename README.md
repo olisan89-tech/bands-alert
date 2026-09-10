@@ -1,20 +1,24 @@
 # bands-alert
 
-Checks Ticketmaster and Bandsintown every day for South Florida tour dates
+Checks Ticketmaster and Bandsintown once a week for South Florida tour dates
 (Miami, Fort Lauderdale, Pompano Beach, West Palm Beach, and the surrounding
-area) for a list of tracked artists, and texts you about any new show it
-finds. Runs for free on a GitHub Actions schedule — no server to maintain.
+area) for a list of tracked artists, and sends a single text digest of any
+new shows it found. Runs for free on a GitHub Actions schedule — no server
+to maintain.
 
 ## How it works
 
-1. `.github/workflows/check-concerts.yml` runs `npm run check` once a day
-   (and can be triggered manually from the Actions tab).
+1. `.github/workflows/check-concerts.yml` runs `npm run check` once a week,
+   every Monday (and can be triggered manually from the Actions tab).
 2. `src/check-concerts.js` looks up each artist in `src/artists.json`
    against the Ticketmaster Discovery API and the Bandsintown API,
    filtering results down to South Florida venues.
-3. Any show not already in `data/seen-events.json` is texted to you and
-   recorded so you don't get the same alert twice. That file gets committed
-   back to the repo automatically after each run.
+3. Any show not already in `data/seen-events.json` is bundled into a single
+   text digest (split into a couple of texts only if there are a lot of new
+   shows that week — see `MAX_EVENTS_PER_TEXT` in `src/check-concerts.js`)
+   and recorded so you don't get the same alert twice. If there's nothing
+   new, no text is sent. `seen-events.json` gets committed back to the repo
+   automatically after each run.
 4. Texts are sent by emailing your phone's carrier SMS gateway (for AT&T,
    `yournumber@txt.att.net`) through Gmail's SMTP server — no paid SMS
    service required.
@@ -52,7 +56,7 @@ Optional (defaults are already fine): `BANDSINTOWN_APP_ID`, `SMTP_HOST`,
 
 ### 4. Done
 
-The workflow runs automatically every day at ~9am Eastern. To test it
+The workflow runs automatically every Monday at ~9am Eastern. To test it
 immediately: go to the **Actions** tab → **Check for concerts** → **Run
 workflow**.
 
@@ -93,4 +97,4 @@ actually sending anything or marking events as seen.
   contractual guarantee of service — if it ever stops responding, the
   Ticketmaster results alone still cover most major-venue shows.
 - GitHub Actions' cron doesn't adjust for daylight saving time, so the
-  daily run time shifts by an hour between EDT and EST.
+  weekly run time shifts by an hour between EDT and EST.

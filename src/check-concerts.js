@@ -29,6 +29,30 @@ function dedupeKey(event) {
   return `${artist}|${event.date}|${city}`;
 }
 
+// Groups new shows into a handful of digest texts instead of one text per
+// show, so a week with several new shows doesn't blow up your phone.
+const MAX_EVENTS_PER_TEXT = 5;
+
+function buildDigestChunks(events) {
+  const chunks = [];
+  for (let i = 0; i < events.length; i += MAX_EVENTS_PER_TEXT) {
+    chunks.push(events.slice(i, i + MAX_EVENTS_PER_TEXT));
+  }
+  return chunks;
+}
+
+function formatDigest(events, chunkIndex, totalChunks) {
+  const header =
+    totalChunks > 1
+      ? `New shows (${chunkIndex + 1}/${totalChunks}):`
+      : "New shows this week:";
+  const lines = events.map((event) => {
+    const when = formatDateTime(event.date, event.time);
+    return `${event.artistQuery} - ${when} @ ${event.venueName}, ${event.city} FL${event.url ? `\n${event.url}` : ""}`;
+  });
+  return [header, ...lines].join("\n\n");
+}
+
 async function loadState() {
   try {
     const raw = await readFile(STATE_PATH, "utf8");
@@ -103,9 +127,9 @@ async function main() {
     return;
   }
 
-  for (const event of newEvents) {
-    const when = formatDateTime(event.date, event.time);
-    const body = `New show: ${event.artistQuery}\n${when}\n${event.venueName}, ${event.city} FL\n${event.url ?? ""}`.trim();
+  const chunks = buildDigestChunks(newEvents);
+  for (const [index, chunk] of chunks.entries()) {
+    const body = formatDigest(chunk, index, chunks.length);
     try {
       await sendSms({
         smtpHost: SMTP_HOST,
@@ -115,11 +139,11 @@ async function main() {
         toAddress: ALERT_EMAIL,
         body,
       });
-      console.log(`Texted alert for ${event.artistQuery} (${event.date}).`);
+      console.log(`Texted digest ${index + 1}/${chunks.length} (${chunk.length} show(s)).`);
     } catch (err) {
-      console.error(`Failed to send SMS for ${event.artistQuery}: ${err.message}`);
+      console.error(`Failed to send digest ${index + 1}/${chunks.length}: ${err.message}`);
       // Don't persist events we failed to text; retry them on the next run.
-      delete state[dedupeKey(event)];
+      for (const event of chunk) delete state[dedupeKey(event)];
     }
   }
 

@@ -2,9 +2,9 @@ name: Check for concerts
 
 on:
   schedule:
-    # 13:00 UTC = 9am EDT / 8am EST. GitHub Actions cron doesn't observe DST,
-    # so alerts will land around 8-9am Eastern year-round.
-    - cron: "0 13 * * *"
+    # Every Monday at 13:00 UTC = 9am EDT / 8am EST. GitHub Actions cron
+    # doesn't observe DST, so this lands around 8-9am Eastern year-round.
+    - cron: "0 13 * * 1"
   workflow_dispatch: {}
 
 permissions:

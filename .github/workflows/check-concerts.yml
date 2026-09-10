@@ -1,0 +1,45 @@
+name: Check for concerts
+
+on:
+  schedule:
+    # 13:00 UTC = 9am EDT / 8am EST. GitHub Actions cron doesn't observe DST,
+    # so alerts will land around 8-9am Eastern year-round.
+    - cron: "0 13 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Check for new shows
+        env:
+          TICKETMASTER_API_KEY: ${{ secrets.TICKETMASTER_API_KEY }}
+          BANDSINTOWN_APP_ID: ${{ secrets.BANDSINTOWN_APP_ID }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
+        run: npm run check
+
+      - name: Commit updated event state
+        run: |
+          git config user.name "bands-alert-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/seen-events.json
+          git diff --staged --quiet || git commit -m "chore: update seen events state"
+          git push

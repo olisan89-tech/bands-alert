@@ -41,8 +41,8 @@ function buildDigestChunks(events) {
 function formatDigest(events, chunkIndex, totalChunks) {
   const header =
     totalChunks > 1
-      ? `New shows (${chunkIndex + 1}/${totalChunks}):`
-      : "New show announced:";
+      ? `Upcoming shows (${chunkIndex + 1}/${totalChunks}):`
+      : "Upcoming shows:";
   const lines = events.map((event) => {
     const when = formatDateTime(event.date, event.time);
     return `${event.artistQuery} - ${when} @ ${event.venueName}, ${event.city} FL${event.url ? `\n${event.url}` : ""}`;

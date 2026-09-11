@@ -2,9 +2,9 @@
 
 Checks Ticketmaster and Bandsintown once a week for South Florida tour dates
 (Miami, Fort Lauderdale, Pompano Beach, West Palm Beach, and the surrounding
-area) for a list of tracked artists, and sends a single text digest of any
-new shows it found. Runs for free on a GitHub Actions schedule — no server
-to maintain.
+area) for a list of tracked artists, and sends a single WhatsApp digest of
+any new shows it found. Runs for free on a GitHub Actions schedule — no
+server to maintain.
 
 ## How it works
 
@@ -14,14 +14,18 @@ to maintain.
    against the Ticketmaster Discovery API and the Bandsintown API,
    filtering results down to South Florida venues.
 3. Any show not already in `data/seen-events.json` is bundled into a single
-   text digest (split into a couple of texts only if there are a lot of new
-   shows that week — see `MAX_EVENTS_PER_TEXT` in `src/check-concerts.js`)
-   and recorded so you don't get the same alert twice. If there's nothing
-   new, no text is sent. `seen-events.json` gets committed back to the repo
-   automatically after each run.
-4. Texts are sent by emailing your phone's carrier SMS gateway (for AT&T,
-   `yournumber@txt.att.net`) through Gmail's SMTP server — no paid SMS
-   service required.
+   WhatsApp digest (split into a couple of messages only if there are a lot
+   of new shows that week — see `MAX_EVENTS_PER_TEXT` in
+   `src/check-concerts.js`) and recorded so you don't get the same alert
+   twice. If there's nothing new, no message is sent. `seen-events.json`
+   gets committed back to the repo automatically after each run.
+4. Alerts are sent via [CallMeBot's free WhatsApp API](https://www.callmebot.com/blog/free-api-whatsapp-messages/)
+   — a simple HTTP call, no paid service or carrier gateway involved.
+
+   > We originally built this on AT&T's free email-to-SMS gateway
+   > (`@txt.att.net`), but AT&T has discontinued it — Gmail's own bounce
+   > confirmed the domain no longer resolves at all. WhatsApp via CallMeBot
+   > is the replacement.
 
 ## One-time setup
 
@@ -30,14 +34,18 @@ to maintain.
 Go to https://developer.ticketmaster.com/, sign up, and create an app. Your
 **Consumer Key** is the API key.
 
-### 2. Create a Gmail App Password
+### 2. Activate CallMeBot on WhatsApp
 
-You'll send the alert emails from a Gmail account (a new one is fine, or
-use an existing one):
+1. Save this number to your phone's contacts: **+34 644 59 71 45**
+2. Open WhatsApp and send that contact this exact message:
+   `I allow callmebot to send me messages`
+3. Within a minute or two, you'll get a reply with your personal API key
+   (a number). Save it — you'll need it in the next step, along with the
+   exact phone number format CallMeBot used to reach you (country code, no
+   spaces or symbols, e.g. `13053386230`).
 
-1. Turn on 2-Step Verification on the Google account: https://myaccount.google.com/security
-2. Create an App Password at https://myaccount.google.com/apppasswords
-   (choose "Mail" / "Other"). Copy the 16-character password.
+If you don't get a reply, double check you sent the exact activation phrase
+and that WhatsApp is registered to the number you're texting from.
 
 ### 3. Add repo secrets
 
@@ -47,12 +55,10 @@ secret**. Add:
 | Secret | Value |
 |---|---|
 | `TICKETMASTER_API_KEY` | Consumer Key from step 1 |
-| `SMTP_USER` | The Gmail address you're sending from |
-| `SMTP_PASS` | The App Password from step 2 |
-| `ALERT_EMAIL` | `3053386230@txt.att.net` |
+| `CALLMEBOT_PHONE` | Your WhatsApp number from step 2, e.g. `13053386230` |
+| `CALLMEBOT_APIKEY` | The API key CallMeBot sent you in step 2 |
 
-Optional (defaults are already fine): `BANDSINTOWN_APP_ID`, `SMTP_HOST`,
-`SMTP_PORT`.
+Optional (default is already fine): `BANDSINTOWN_APP_ID`.
 
 ### 4. Done
 
@@ -83,18 +89,24 @@ npm install
 npm run check
 ```
 
-Set `DRY_RUN=true` in `.env` to see what would be found/texted without
+Set `DRY_RUN=true` in `.env` to see what would be found/sent without
 actually sending anything or marking events as seen.
 
 ## Known limitations
 
-- **AT&T's email-to-SMS gateway** (`@txt.att.net`) is free but not
-  officially guaranteed — carriers occasionally delay or drop these emails,
-  especially if flagged as bulk/spam. If alerts stop arriving reliably,
-  the most robust fix is switching to a paid provider like Twilio.
-- **Bandsintown's app_id-based endpoint** is commonly used for exactly this
-  kind of personal lookup without a formal signup, but it's not a
-  contractual guarantee of service — if it ever stops responding, the
-  Ticketmaster results alone still cover most major-venue shows.
+- **Bandsintown's app_id-based endpoint currently returns a hard 403** for
+  every lookup (not just this project — it looks like Bandsintown now
+  blocks unregistered `app_id` values outright rather than just rate
+  limiting them). It's left in the code since it fails harmlessly and costs
+  only a few seconds per run; Ticketmaster is doing all the real work right
+  now and already found real shows in testing. Worth reassessing later —
+  either by getting a proper registered Bandsintown API key, or removing it
+  if it never comes back.
+- **CallMeBot is a free community-run service**, not a paid guarantee — it
+  can occasionally be slow or rate-limited, and in the free tier is
+  generally limited to non-bulk personal use. Given this only sends a
+  handful of messages a week, it comfortably fits that. If it ever becomes
+  unreliable, the fallback is a paid provider like Twilio (real SMS,
+  ~$1/month + pennies per text).
 - GitHub Actions' cron doesn't adjust for daylight saving time, so the
   weekly run time shifts by an hour between EDT and EST.

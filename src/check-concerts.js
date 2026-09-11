@@ -7,7 +7,7 @@ import artists from "./artists.json" with { type: "json" };
 import { fetchTicketmasterEvents } from "./ticketmaster.js";
 import { fetchBandsintownEvents } from "./bandsintown.js";
 import { formatDateTime } from "./format.js";
-import { sendSms } from "./notify.js";
+import { sendWhatsApp } from "./notify.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const STATE_PATH = path.join(__dirname, "..", "data", "seen-events.json");
@@ -17,10 +17,8 @@ const STATE_PATH = path.join(__dirname, "..", "data", "seen-events.json");
 // (which only trigger on undefined) silently pass through "" instead of
 // falling back. Use `||` against process.env directly so an empty string
 // falls back too.
-const { TICKETMASTER_API_KEY, SMTP_USER, SMTP_PASS, ALERT_EMAIL, DRY_RUN } = process.env;
+const { TICKETMASTER_API_KEY, CALLMEBOT_PHONE, CALLMEBOT_APIKEY, DRY_RUN } = process.env;
 const BANDSINTOWN_APP_ID = process.env.BANDSINTOWN_APP_ID || "bands-alert-app";
-const SMTP_HOST = process.env.SMTP_HOST || "smtp.gmail.com";
-const SMTP_PORT = process.env.SMTP_PORT || "465";
 
 function dedupeKey(event) {
   const artist = event.artistQuery.toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -114,13 +112,13 @@ async function main() {
   }
 
   if (DRY_RUN === "true") {
-    console.log("DRY_RUN=true, skipping SMS send and state save.");
+    console.log("DRY_RUN=true, skipping WhatsApp send and state save.");
     return;
   }
 
-  if (!SMTP_USER || !SMTP_PASS || !ALERT_EMAIL) {
+  if (!CALLMEBOT_PHONE || !CALLMEBOT_APIKEY) {
     console.error(
-      "Missing SMTP_USER, SMTP_PASS, or ALERT_EMAIL; cannot send SMS. New events were found but no text will be sent."
+      "Missing CALLMEBOT_PHONE or CALLMEBOT_APIKEY; cannot send WhatsApp message. New events were found but no alert will be sent."
     );
     process.exitCode = 1;
     return;
@@ -128,20 +126,13 @@ async function main() {
 
   const chunks = buildDigestChunks(newEvents);
   for (const [index, chunk] of chunks.entries()) {
-    const body = formatDigest(chunk, index, chunks.length);
+    const message = formatDigest(chunk, index, chunks.length);
     try {
-      await sendSms({
-        smtpHost: SMTP_HOST,
-        smtpPort: SMTP_PORT,
-        smtpUser: SMTP_USER,
-        smtpPass: SMTP_PASS,
-        toAddress: ALERT_EMAIL,
-        body,
-      });
-      console.log(`Texted digest ${index + 1}/${chunks.length} (${chunk.length} show(s)).`);
+      await sendWhatsApp({ phone: CALLMEBOT_PHONE, apiKey: CALLMEBOT_APIKEY, message });
+      console.log(`Sent WhatsApp digest ${index + 1}/${chunks.length} (${chunk.length} show(s)).`);
     } catch (err) {
       console.error(`Failed to send digest ${index + 1}/${chunks.length}: ${err.message}`);
-      // Don't persist events we failed to text; retry them on the next run.
+      // Don't persist events we failed to send; retry them on the next run.
       for (const event of chunk) delete state[dedupeKey(event)];
     }
   }

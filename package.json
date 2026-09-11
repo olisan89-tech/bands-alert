@@ -3,13 +3,12 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Checks Ticketmaster and Bandsintown for South Florida tour dates of tracked artists and texts new shows via email-to-SMS.",
+  "description": "Checks Ticketmaster and Bandsintown for South Florida tour dates of tracked artists and sends new shows via WhatsApp.",
   "scripts": {
     "check": "node src/check-concerts.js"
   },
   "dependencies": {
-    "dotenv": "^16.4.5",
-    "nodemailer": "^10.0.2"
+    "dotenv": "^16.4.5"
   },
   "engines": {
     "node": ">=18"

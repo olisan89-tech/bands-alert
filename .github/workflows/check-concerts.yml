@@ -29,8 +29,7 @@ jobs:
         env:
           TICKETMASTER_API_KEY: ${{ secrets.TICKETMASTER_API_KEY }}
           BANDSINTOWN_APP_ID: ${{ secrets.BANDSINTOWN_APP_ID }}
-          CALLMEBOT_PHONE: ${{ secrets.CALLMEBOT_PHONE }}
-          CALLMEBOT_APIKEY: ${{ secrets.CALLMEBOT_APIKEY }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
         run: npm run check
 
       - name: Commit updated event state

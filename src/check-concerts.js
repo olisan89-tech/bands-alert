@@ -7,7 +7,7 @@ import artists from "./artists.json" with { type: "json" };
 import { fetchTicketmasterEvents } from "./ticketmaster.js";
 import { fetchBandsintownEvents } from "./bandsintown.js";
 import { formatDateTime } from "./format.js";
-import { sendWhatsApp } from "./notify.js";
+import { sendNtfy } from "./notify.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const STATE_PATH = path.join(__dirname, "..", "data", "seen-events.json");
@@ -17,7 +17,7 @@ const STATE_PATH = path.join(__dirname, "..", "data", "seen-events.json");
 // (which only trigger on undefined) silently pass through "" instead of
 // falling back. Use `||` against process.env directly so an empty string
 // falls back too.
-const { TICKETMASTER_API_KEY, CALLMEBOT_PHONE, CALLMEBOT_APIKEY, DRY_RUN } = process.env;
+const { TICKETMASTER_API_KEY, NTFY_TOPIC, DRY_RUN } = process.env;
 const BANDSINTOWN_APP_ID = process.env.BANDSINTOWN_APP_ID || "bands-alert-app";
 
 function dedupeKey(event) {
@@ -112,13 +112,13 @@ async function main() {
   }
 
   if (DRY_RUN === "true") {
-    console.log("DRY_RUN=true, skipping WhatsApp send and state save.");
+    console.log("DRY_RUN=true, skipping notification send and state save.");
     return;
   }
 
-  if (!CALLMEBOT_PHONE || !CALLMEBOT_APIKEY) {
+  if (!NTFY_TOPIC) {
     console.error(
-      "Missing CALLMEBOT_PHONE or CALLMEBOT_APIKEY; cannot send WhatsApp message. New events were found but no alert will be sent."
+      "Missing NTFY_TOPIC; cannot send notification. New events were found but no alert will be sent."
     );
     process.exitCode = 1;
     return;
@@ -128,8 +128,8 @@ async function main() {
   for (const [index, chunk] of chunks.entries()) {
     const message = formatDigest(chunk, index, chunks.length);
     try {
-      await sendWhatsApp({ phone: CALLMEBOT_PHONE, apiKey: CALLMEBOT_APIKEY, message });
-      console.log(`Sent WhatsApp digest ${index + 1}/${chunks.length} (${chunk.length} show(s)).`);
+      await sendNtfy({ topic: NTFY_TOPIC, message, title: "New South Florida shows" });
+      console.log(`Sent notification ${index + 1}/${chunks.length} (${chunk.length} show(s)).`);
     } catch (err) {
       console.error(`Failed to send digest ${index + 1}/${chunks.length}: ${err.message}`);
       // Don't persist events we failed to send; retry them on the next run.

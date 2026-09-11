@@ -1,16 +1,17 @@
-// Sends a message via CallMeBot's WhatsApp API (https://www.callmebot.com/blog/free-api-whatsapp-messages/).
-// One-time setup per phone number: add the CallMeBot contact on WhatsApp,
-// send it the activation phrase, and it replies with an API key.
-export async function sendWhatsApp({ phone, apiKey, message }) {
-  const url = new URL("https://api.callmebot.com/whatsapp.php");
-  url.searchParams.set("phone", phone);
-  url.searchParams.set("text", message);
-  url.searchParams.set("apikey", apiKey);
+// Sends a push notification via ntfy.sh (https://ntfy.sh) - a free, no
+// signup, no API key push service. Anyone who knows the topic name can
+// publish/subscribe to it, so treat the topic as a secret (a random,
+// unguessable string), not a public label.
+export async function sendNtfy({ topic, message, title }) {
+  const headers = { "Content-Type": "text/plain; charset=utf-8" };
+  if (title) headers.Title = title;
 
-  const res = await fetch(url);
-  const body = await res.text();
-  if (!res.ok || /error/i.test(body)) {
-    throw new Error(`CallMeBot error ${res.status}: ${body}`);
+  const res = await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`, {
+    method: "POST",
+    headers,
+    body: message,
+  });
+  if (!res.ok) {
+    throw new Error(`ntfy.sh error ${res.status}: ${await res.text()}`);
   }
-  return body;
 }

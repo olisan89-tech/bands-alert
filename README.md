@@ -2,9 +2,9 @@
 
 Checks Ticketmaster and Bandsintown once a week for South Florida tour dates
 (Miami, Fort Lauderdale, Pompano Beach, West Palm Beach, and the surrounding
-area) for a list of tracked artists, and sends a single WhatsApp digest of
-any new shows it found. Runs for free on a GitHub Actions schedule — no
-server to maintain.
+area) for a list of tracked artists, and sends a single push-notification
+digest of any new shows it found. Runs for free on a GitHub Actions
+schedule — no server to maintain.
 
 ## How it works
 
@@ -14,18 +14,21 @@ server to maintain.
    against the Ticketmaster Discovery API and the Bandsintown API,
    filtering results down to South Florida venues.
 3. Any show not already in `data/seen-events.json` is bundled into a single
-   WhatsApp digest (split into a couple of messages only if there are a lot
-   of new shows that week — see `MAX_EVENTS_PER_TEXT` in
+   notification digest (split into a couple of messages only if there are a
+   lot of new shows that week — see `MAX_EVENTS_PER_TEXT` in
    `src/check-concerts.js`) and recorded so you don't get the same alert
-   twice. If there's nothing new, no message is sent. `seen-events.json`
+   twice. If there's nothing new, no notification is sent. `seen-events.json`
    gets committed back to the repo automatically after each run.
-4. Alerts are sent via [CallMeBot's free WhatsApp API](https://www.callmebot.com/blog/free-api-whatsapp-messages/)
-   — a simple HTTP call, no paid service or carrier gateway involved.
+4. Alerts are sent via [ntfy.sh](https://ntfy.sh) — a free, no-signup push
+   notification service. A single HTTP POST to a private topic URL delivers
+   an instant push notification to your phone through their app.
 
-   > We originally built this on AT&T's free email-to-SMS gateway
-   > (`@txt.att.net`), but AT&T has discontinued it — Gmail's own bounce
-   > confirmed the domain no longer resolves at all. WhatsApp via CallMeBot
-   > is the replacement.
+   > This project's alert method has changed twice during setup: AT&T's
+   > free email-to-SMS gateway turned out to be discontinued (Gmail's
+   > bounce confirmed the domain no longer resolves), and CallMeBot's free
+   > WhatsApp API was full/closed to new signups when we tried it. ntfy.sh
+   > has no signup and no capacity cap, so it doesn't have either failure
+   > mode.
 
 ## One-time setup
 
@@ -34,18 +37,18 @@ server to maintain.
 Go to https://developer.ticketmaster.com/, sign up, and create an app. Your
 **Consumer Key** is the API key.
 
-### 2. Activate CallMeBot on WhatsApp
+### 2. Set up ntfy.sh
 
-1. Save this number to your phone's contacts: **+34 644 59 71 45**
-2. Open WhatsApp and send that contact this exact message:
-   `I allow callmebot to send me messages`
-3. Within a minute or two, you'll get a reply with your personal API key
-   (a number). Save it — you'll need it in the next step, along with the
-   exact phone number format CallMeBot used to reach you (country code, no
-   spaces or symbols, e.g. `13053386230`).
+1. Install the free **ntfy** app: [iOS](https://apps.apple.com/us/app/ntfy/id1625396347) / [Android](https://play.google.com/store/apps/details?id=io.heckel.ntfy)
+2. In the app, subscribe to this topic (already generated, unique and hard
+   to guess): **`bands-alert-c8b5d58eeb6e`**
+   - Use the default public server (`ntfy.sh`) — no account needed.
+3. That's it — anything posted to that topic now becomes a push
+   notification on your phone.
 
-If you don't get a reply, double check you sent the exact activation phrase
-and that WhatsApp is registered to the number you're texting from.
+Treat the topic name like a password: anyone who has it can publish to it
+(or read your alerts) since ntfy.sh's public server doesn't require auth by
+default. Don't share it or post it publicly.
 
 ### 3. Add repo secrets
 
@@ -55,10 +58,13 @@ secret**. Add:
 | Secret | Value |
 |---|---|
 | `TICKETMASTER_API_KEY` | Consumer Key from step 1 |
-| `CALLMEBOT_PHONE` | Your WhatsApp number from step 2, e.g. `13053386230` |
-| `CALLMEBOT_APIKEY` | The API key CallMeBot sent you in step 2 |
+| `NTFY_TOPIC` | `bands-alert-c8b5d58eeb6e` |
 
 Optional (default is already fine): `BANDSINTOWN_APP_ID`.
+
+If you previously added `CALLMEBOT_PHONE`, `CALLMEBOT_APIKEY`, `SMTP_USER`,
+`SMTP_PASS`, or `ALERT_EMAIL` secrets from earlier setup attempts, they're
+unused now and safe to delete.
 
 ### 4. Done
 
@@ -102,11 +108,9 @@ actually sending anything or marking events as seen.
   now and already found real shows in testing. Worth reassessing later —
   either by getting a proper registered Bandsintown API key, or removing it
   if it never comes back.
-- **CallMeBot is a free community-run service**, not a paid guarantee — it
-  can occasionally be slow or rate-limited, and in the free tier is
-  generally limited to non-bulk personal use. Given this only sends a
-  handful of messages a week, it comfortably fits that. If it ever becomes
-  unreliable, the fallback is a paid provider like Twilio (real SMS,
-  ~$1/month + pennies per text).
+- **ntfy.sh's public server is free and unauthenticated by topic** — it's
+  reliable in practice, but it's still a shared free service, not a paid
+  SLA. If it ever becomes unreliable, the fallback is a paid provider like
+  Twilio (real SMS, ~$1/month + pennies per text).
 - GitHub Actions' cron doesn't adjust for daylight saving time, so the
   weekly run time shifts by an hour between EDT and EST.

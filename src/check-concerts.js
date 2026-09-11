@@ -12,16 +12,15 @@ import { sendSms } from "./notify.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const STATE_PATH = path.join(__dirname, "..", "data", "seen-events.json");
 
-const {
-  TICKETMASTER_API_KEY,
-  BANDSINTOWN_APP_ID = "bands-alert-app",
-  SMTP_HOST = "smtp.gmail.com",
-  SMTP_PORT = "465",
-  SMTP_USER,
-  SMTP_PASS,
-  ALERT_EMAIL,
-  DRY_RUN,
-} = process.env;
+// GitHub Actions sets a secret env var to an empty string (not undefined)
+// when the secret isn't set in the repo, so plain destructuring defaults
+// (which only trigger on undefined) silently pass through "" instead of
+// falling back. Use `||` against process.env directly so an empty string
+// falls back too.
+const { TICKETMASTER_API_KEY, SMTP_USER, SMTP_PASS, ALERT_EMAIL, DRY_RUN } = process.env;
+const BANDSINTOWN_APP_ID = process.env.BANDSINTOWN_APP_ID || "bands-alert-app";
+const SMTP_HOST = process.env.SMTP_HOST || "smtp.gmail.com";
+const SMTP_PORT = process.env.SMTP_PORT || "465";
 
 function dedupeKey(event) {
   const artist = event.artistQuery.toLowerCase().replace(/[^a-z0-9]/g, "");

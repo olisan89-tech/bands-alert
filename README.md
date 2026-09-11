@@ -1,24 +1,27 @@
 # bands-alert
 
-Checks Ticketmaster and Bandsintown once a week for South Florida tour dates
+Checks Ticketmaster and Bandsintown every hour for South Florida tour dates
 (Miami, Fort Lauderdale, Pompano Beach, West Palm Beach, and the surrounding
-area) for a list of tracked artists, and sends a single push-notification
-digest of any new shows it found. Runs for free on a GitHub Actions
-schedule — no server to maintain.
+area) for a list of tracked artists, and sends a push notification as soon
+as it finds a new one — so you hear about a show close to when it's first
+announced, not whenever you happen to check. Runs for free on a GitHub
+Actions schedule — no server to maintain.
 
 ## How it works
 
-1. `.github/workflows/check-concerts.yml` runs `npm run check` once a week,
-   every Monday (and can be triggered manually from the Actions tab).
+1. `.github/workflows/check-concerts.yml` runs `npm run check` every hour
+   (and can be triggered manually from the Actions tab).
 2. `src/check-concerts.js` looks up each artist in `src/artists.json`
    against the Ticketmaster Discovery API and the Bandsintown API,
    filtering results down to South Florida venues.
 3. Any show not already in `data/seen-events.json` is bundled into a single
-   notification digest (split into a couple of messages only if there are a
-   lot of new shows that week — see `MAX_EVENTS_PER_TEXT` in
-   `src/check-concerts.js`) and recorded so you don't get the same alert
-   twice. If there's nothing new, no notification is sent. `seen-events.json`
-   gets committed back to the repo automatically after each run.
+   notification digest (split into a couple of messages only if a single run
+   somehow turns up a lot of new shows at once — see `MAX_EVENTS_PER_TEXT`
+   in `src/check-concerts.js`) and recorded so you don't get the same alert
+   twice. If there's nothing new, no notification is sent — checking hourly
+   doesn't mean hourly noise, just a shorter delay before a real one reaches
+   you. `seen-events.json` gets committed back to the repo automatically
+   after each run.
 4. Alerts are sent via [ntfy.sh](https://ntfy.sh) — a free, no-signup push
    notification service. A single HTTP POST to a private topic URL delivers
    an instant push notification to your phone through their app.
@@ -68,9 +71,8 @@ unused now and safe to delete.
 
 ### 4. Done
 
-The workflow runs automatically every Monday at ~9am Eastern. To test it
-immediately: go to the **Actions** tab → **Check for concerts** → **Run
-workflow**.
+The workflow runs automatically every hour. To test it immediately: go to
+the **Actions** tab → **Check for concerts** → **Run workflow**.
 
 ## Managing the artist list
 
@@ -112,5 +114,5 @@ actually sending anything or marking events as seen.
   reliable in practice, but it's still a shared free service, not a paid
   SLA. If it ever becomes unreliable, the fallback is a paid provider like
   Twilio (real SMS, ~$1/month + pennies per text).
-- GitHub Actions' cron doesn't adjust for daylight saving time, so the
-  weekly run time shifts by an hour between EDT and EST.
+- Running hourly costs GitHub Actions minutes, but trivially — each run
+  takes roughly 15-20 seconds, so about 6-8 minutes/day total.

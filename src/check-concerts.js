@@ -26,8 +26,8 @@ function dedupeKey(event) {
   return `${artist}|${event.date}|${city}`;
 }
 
-// Groups new shows into a handful of digest texts instead of one text per
-// show, so a week with several new shows doesn't blow up your phone.
+// Groups new shows into a handful of digest notifications instead of one
+// per show, in case a single run ever turns up several at once.
 const MAX_EVENTS_PER_TEXT = 5;
 
 function buildDigestChunks(events) {
@@ -42,7 +42,7 @@ function formatDigest(events, chunkIndex, totalChunks) {
   const header =
     totalChunks > 1
       ? `New shows (${chunkIndex + 1}/${totalChunks}):`
-      : "New shows this week:";
+      : "New show announced:";
   const lines = events.map((event) => {
     const when = formatDateTime(event.date, event.time);
     return `${event.artistQuery} - ${when} @ ${event.venueName}, ${event.city} FL${event.url ? `\n${event.url}` : ""}`;

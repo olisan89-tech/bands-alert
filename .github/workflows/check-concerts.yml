@@ -2,9 +2,10 @@ name: Check for concerts
 
 on:
   schedule:
-    # Every Monday at 13:00 UTC = 9am EDT / 8am EST. GitHub Actions cron
-    # doesn't observe DST, so this lands around 8-9am Eastern year-round.
-    - cron: "0 13 * * 1"
+    # Every hour, so new Ticketmaster/Bandsintown listings get caught fast.
+    # Alerts only fire on genuinely new shows, so this stays silent (no
+    # extra noise) - it just shortens the delay before you hear about one.
+    - cron: "0 * * * *"
   workflow_dispatch: {}
 
 permissions:

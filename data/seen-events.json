@@ -37,5 +37,18 @@
     "city": "Miami",
     "state": "FL",
     "url": "https://on.fgtix.com/trk/cp4M"
+  },
+  "zimmer|2027-03-13|miami": {
+    "firstSeen": "2026-09-17T14:11:36.680Z",
+    "source": "ticketmaster",
+    "id": "vvG1VZ_3GOtwD8",
+    "artistQuery": "Zimmer",
+    "eventName": "HANS ZIMMER LIVE - THE NEXT LEVEL",
+    "date": "2027-03-13",
+    "time": "20:00:00",
+    "venueName": "Kaseya Center",
+    "city": "Miami",
+    "state": "FL",
+    "url": "https://www.ticketmaster.com/hans-zimmer-live-the-next-level-miami-florida-03-13-2027/event/0D00652320A72ED0"
   }
 }

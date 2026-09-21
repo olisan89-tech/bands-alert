@@ -63,5 +63,18 @@
     "city": "Miami",
     "state": "FL",
     "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAZYjI"
+  },
+  "odesza|2026-11-14|miami": {
+    "firstSeen": "2026-09-21T20:10:00.929Z",
+    "source": "ticketmaster",
+    "id": "Z7r9jZ1AAvovK",
+    "artistQuery": "ODESZA",
+    "eventName": "Odesza - Ages 18+",
+    "date": "2026-11-14",
+    "time": "22:00:00",
+    "venueName": "Factory Town",
+    "city": "Miami",
+    "state": "FL",
+    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAvovK"
   }
 }

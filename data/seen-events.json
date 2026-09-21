@@ -50,5 +50,18 @@
     "city": "Miami",
     "state": "FL",
     "url": "https://www.ticketmaster.com/hans-zimmer-live-the-next-level-miami-florida-03-13-2027/event/0D00652320A72ED0"
+  },
+  "fisher|2026-09-26|miami": {
+    "firstSeen": "2026-09-21T19:09:08.318Z",
+    "source": "ticketmaster",
+    "id": "Z7r9jZ1AAZYjI",
+    "artistQuery": "FISHER",
+    "eventName": "Fisher - Ages 18+",
+    "date": "2026-09-26",
+    "time": "22:00:00",
+    "venueName": "Factory Town",
+    "city": "Miami",
+    "state": "FL",
+    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAZYjI"
   }
 }

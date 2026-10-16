@@ -115,5 +115,18 @@
     "city": "Miami",
     "state": "FL",
     "url": "https://on.fgtix.com/trk/DDCK"
+  },
+  "ironmaiden|2027-05-02|westpalmbeach": {
+    "firstSeen": "2026-10-16T15:12:32.204Z",
+    "source": "ticketmaster",
+    "id": "vvG1VZ_fSoGFNX",
+    "artistQuery": "Iron Maiden",
+    "eventName": "Iron Maiden: Run For Your Lives North American Tour 2027",
+    "date": "2027-05-02",
+    "time": "18:30:00",
+    "venueName": "iTHINK Financial Amphitheatre ",
+    "city": "West Palm Beach",
+    "state": "FL",
+    "url": "https://www.ticketmaster.com/iron-maiden-run-for-your-lives-west-palm-beach-florida-05-02-2027/event/0D00654CD13088FE"
   }
 }

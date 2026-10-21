@@ -128,5 +128,18 @@
     "city": "West Palm Beach",
     "state": "FL",
     "url": "https://www.ticketmaster.com/iron-maiden-run-for-your-lives-west-palm-beach-florida-05-02-2027/event/0D00654CD13088FE"
+  },
+  "pawsa|2026-12-04|miamibeach": {
+    "firstSeen": "2026-10-21T22:06:31.916Z",
+    "source": "ticketmaster",
+    "id": "rZ7HnEZ1A4v8Od",
+    "artistQuery": "PAWSA",
+    "eventName": "Pawsa",
+    "date": "2026-12-04",
+    "time": "23:30:00",
+    "venueName": "LIV Nightclub Miami",
+    "city": "Miami Beach",
+    "state": "FL",
+    "url": "https://www.ticketweb.com/event/pawsa-liv-nightclub-miami-tickets/15050803"
   }
 }

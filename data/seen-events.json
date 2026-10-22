@@ -141,5 +141,18 @@
     "city": "Miami Beach",
     "state": "FL",
     "url": "https://www.ticketweb.com/event/pawsa-liv-nightclub-miami-tickets/15050803"
+  },
+  "her|2026-12-09|lakeworth": {
+    "firstSeen": "2026-10-22T01:13:24.240Z",
+    "source": "ticketmaster",
+    "id": "rZ7HnEZ1A4v3fN",
+    "artistQuery": "H.E.R.",
+    "eventName": "In Her Own Words \"Fine, We'll Come to Florida\" Tour in West Palm Beach",
+    "date": "2026-12-09",
+    "time": "19:00:00",
+    "venueName": "Propaganda",
+    "city": "Lake Worth",
+    "state": "FL",
+    "url": "https://www.ticketweb.com/event/in-her-own-words-fine-propaganda-tickets/15052523"
   }
 }
